@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************************
- * Copyright (C) 2011-2012 Ping Identity Corporation
+ * Copyright (C) 2011-2015 Ping Identity Corporation
  * All rights reserved.
  *
  * The contents of this file are the property of Ping Identity Corporation.
@@ -18,14 +18,17 @@
  * @Author: Hans Zandbelt - hzandbelt@pingidentity.com
  *
  **************************************************************************/
-
+	
 class WSTRUST {
 
-	static $TOKENTYPE_SAML11 = 'http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1';
-	static $TOKENTYPE_SAML20 = 'http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0';
-	static $TOKENTYPE_STATUS = 'http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTR/Status';
-	
-	static function getRST($tokenType, $appliesTo, $action = 'Issue') {
+	const TOKENTYPE_SAML11 = 'http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1';
+	const TOKENTYPE_SAML20 = 'http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0';
+	const TOKENTYPE_STATUS = 'http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTR/Status';
+
+	const KEYTYPE_SYMMETRIC = 'http://docs.oasis-open.org/ws-sx/ws-trust/200512/SymmetricKey';
+	const KEYTYPE_BEARER    = 'http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer';
+		
+	static function getRST($tokenType, $appliesTo, $keyType = WSTRUST::KEYTYPE_BEARER, $action = 'Issue') {
 		return <<<XML
 <wst:RequestSecurityToken xmlns:wst="http://docs.oasis-open.org/ws-sx/ws-trust/200512">
   <wst:TokenType>$tokenType</wst:TokenType>
@@ -35,8 +38,7 @@ class WSTRUST {
       <wsa:Address>$appliesTo</wsa:Address>
     </wsa:EndpointReference>
   </wsp:AppliesTo>
-  <wst:KeySize>256</wst:KeySize>
-  <wst:KeyType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/SymmetricKey</wst:KeyType>
+  <wst:KeyType>$keyType</wst:KeyType>
 </wst:RequestSecurityToken>
 XML;
 	}
@@ -136,11 +138,11 @@ XML;
 		$xpath_key = '/xenc:EncryptedData/ds:KeyInfo/xenc:EncryptedKey/xenc:CipherData/xenc:CipherValue';
 		$xpath_encrypted = '/xenc:EncryptedData/xenc:CipherData/xenc:CipherValue';
 		switch ($type) {
-			case WSTRUST::$TOKENTYPE_SAML11:
+			case WSTRUST::TOKENTYPE_SAML11:
 				$xpath->registerNamespace('saml', 'urn:oasis:names:tc:SAML:1.0:assertion');
 				$xpath_suffix = '';
 				break;
-			case WSTRUST::$TOKENTYPE_SAML20:
+			case WSTRUST::TOKENTYPE_SAML20:
 				$xpath->registerNamespace('saml', 'urn:oasis:names:tc:SAML:2.0:assertion');
 				$xpath_suffix = '/saml:EncryptedAssertion';
 				break;

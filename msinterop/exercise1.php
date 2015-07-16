@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************************
- * Copyright (C) 2011-2012 Ping Identity Corporation
+ * Copyright (C) 2011-2015 Ping Identity Corporation
  * All rights reserved.
  *
  * The contents of this file are the property of Ping Identity Corporation.
@@ -38,10 +38,18 @@ $targetIPSTS = 'https://localhost:9031/idp/sts.wst?TokenProcessorId=ad0';
 
 // exercise1
 // $tokenTypeIPSTS = WSTRUST::$TOKENTYPE_SAML11;
-$tokenTypeIPSTS = WSTRUST::$TOKENTYPE_SAML20;
+$tokenTypeIPSTS = WSTRUST::TOKENTYPE_SAML20;
+$keyTypeIPSTS = WSTRUST::KEYTYPE_SYMMETRIC;
 
 // call to IP-STS, authenticate with uname/pwd, retrieve RSTR with generated token
-$result = HTTP::doSOAP($targetIPSTS, WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password), WSTRUST::getTimestampHeader(), $targetIPSTS), WSTRUST::getRST($tokenTypeIPSTS, $appliesTo));
+$result = HTTP::doSOAP(
+		$targetIPSTS,
+		WSTRUST::getRSTHeader(
+				WSTRUST::getUserNameToken($username, $password),
+				WSTRUST::getTimestampHeader(),
+				$targetIPSTS),
+		WSTRUST::getRST($tokenTypeIPSTS, $appliesTo, $keyTypeIPSTS)
+);
 
 // parse the RSTR that is returned
 list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);

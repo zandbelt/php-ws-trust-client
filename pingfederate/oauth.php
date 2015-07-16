@@ -41,10 +41,16 @@ $appliesTo = 'https://ba_client';
 $IPSTS = 'https://localhost:9031/idp/sts.wst?TokenProcessorId=usernametoken0';
 
 // ask for the standard SAML 2.0 token type
-$tokenType = WSTRUST::$TOKENTYPE_SAML20;
+$tokenType = WSTRUST::TOKENTYPE_SAML20;
 
 // call to IP-STS, authenticate with uname/pwd, retrieve RSTR with generated token
-$result = HTTP::doSOAP($IPSTS, WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password), WSTRUST::getTimestampHeader(), $IPSTS), WSTRUST::getRST($tokenType, $appliesTo));
+$result = HTTP::doSOAP(
+		$IPSTS,
+		WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password),
+				WSTRUST::getTimestampHeader(),
+				$IPSTS),
+		WSTRUST::getRST($tokenType, $appliesTo)
+);
 
 // parse the RSTR that is returned
 list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);
@@ -67,7 +73,7 @@ $token = $dom->documentElement;
 $targetRPSTS = 'https://localhost:9031/sp/sts.wst';
 
 // Status Token Type at the RP
-$tokenTypeRPSTS = WSTRUST::$TOKENTYPE_SAML20;
+$tokenTypeRPSTS = WSTRUST::TOKENTYPE_SAML20;
 
 #$ts = WSTRUST::getTimestampHeader('_0');
 #$token = $dom->saveXML($token) . WSTRUST::getSigned($ts, $proofKey, $token->getAttribute('ID'), '_0');

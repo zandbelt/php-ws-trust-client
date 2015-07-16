@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************************
- * Copyright (C) 2013 Ping Identity Corporation
+ * Copyright (C) 2015 Ping Identity Corporation
  * All rights reserved.
  *
  * The contents of this file are the property of Ping Identity Corporation.
@@ -52,10 +52,17 @@ $appliesTo = 'https://login.salesforce.com';
 $IPSTS = 'https://localhost:9031/idp/sts.wst?TokenProcessorId=usernametokenldap';
 
 // ask for the standard SAML 2.0 token type
-$tokenType = WSTRUST::$TOKENTYPE_SAML20;
+$tokenType = WSTRUST::TOKENTYPE_SAML20;
 
 // call to IP-STS, authenticate with uname/pwd, retrieve RSTR with generated token
-$result = HTTP::doSOAP($IPSTS, WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password), WSTRUST::getTimestampHeader(), $IPSTS), WSTRUST::getRST($tokenType, $appliesTo));
+$result = HTTP::doSOAP(
+		$IPSTS,
+		WSTRUST::getRSTHeader(
+				WSTRUST::getUserNameToken($username, $password),
+				WSTRUST::getTimestampHeader(),
+				$IPSTS),
+		WSTRUST::getRST($tokenType, $appliesTo)
+);
 
 // parse the RSTR that is returned
 list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);

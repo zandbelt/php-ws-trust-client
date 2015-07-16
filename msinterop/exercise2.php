@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************************
- * Copyright (C) 2011-2012 Ping Identity Corporation
+ * Copyright (C) 2011-2015 Ping Identity Corporation
  * All rights reserved.
  *
  * The contents of this file are the property of Ping Identity Corporation.
@@ -39,11 +39,17 @@ $targetIPSTS = 'https://localhost:9031/idp/sts.wst?TokenProcessorId=usernameldap
 $targetRPSTS = 'https://hansz-adfs/adfs/services/trust/13/issuedtokenmixedsymmetricbasic256';
 
 // SAML 2.0 Tokens
-$tokenTypeIPSTS = WSTRUST::$TOKENTYPE_SAML20;
-$tokenTypeRPSTS = WSTRUST::$TOKENTYPE_SAML11;
+$tokenTypeIPSTS = WSTRUST::TOKENTYPE_SAML20;
+$tokenTypeRPSTS = WSTRUST::TOKENTYPE_SAML11;
 
 // call to IP-STS, authenticate with uname/pwd, retrieve RSTR with generated token
-$result = HTTP::doSOAP($targetIPSTS, WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password), WSTRUST::getTimestampHeader(), $targetIPSTS), WSTRUST::getRST($tokenTypeIPSTS, $appliesToIPSTS));
+$result = HTTP::doSOAP(
+		$targetIPSTS,
+		WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password),
+				WSTRUST::getTimestampHeader(),
+				$targetIPSTS),
+		WSTRUST::getRST($tokenTypeIPSTS, $appliesToIPSTS)
+);
 
 // parse the RSTR that is returned
 list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);
@@ -53,7 +59,11 @@ list($dom, $token) = WSTRUST::getDecrypted($dom, $xpath, $token, $tokenTypeIPSTS
 
 $ts = WSTRUST::getTimestampHeader('_0');
 $token = $dom->saveXML($token) . WSTRUST::getSigned($ts, $proofKey, $token->getAttribute('ID'), '_0');
-$result = HTTP::doSOAP($targetRPSTS, WSTRUST::getRSTHeader($token, $ts, $targetRPSTS), WSTRUST::getRST($tokenTypeRPSTS, $appliesToRPSTS));
+$result = HTTP::doSOAP(
+		$targetRPSTS,
+		WSTRUST::getRSTHeader($token, $ts, $targetRPSTS),
+		WSTRUST::getRST($tokenTypeRPSTS, $appliesToRPSTS)
+);
 
 // parse the RSTR that is returned
 list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);

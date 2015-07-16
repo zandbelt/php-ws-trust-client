@@ -36,12 +36,19 @@ $targetIPSTS = 'https://localhost:9031/idp/sts.wst?TokenProcessorId=usernameldap
 $targetRPSTS = 'https://localhost:9031/sp/sts.wst';
 
 // SAML 2.0 Token at the IP
-$tokenTypeIPSTS = WSTRUST::$TOKENTYPE_SAML20;
+$tokenTypeIPSTS = WSTRUST::TOKENTYPE_SAML20;
 // Status Token Type at the RP
-$tokenTypeRPSTS = WSTRUST::$TOKENTYPE_STATUS;
+$tokenTypeRPSTS = WSTRUST::TOKENTYPE_STATUS;
+$keyTypeRPSTS = WSTRUST::KEYTYPE_SYMMETRIC;
 
 // call to IP-STS, authenticate with uname/pwd, retrieve RSTR with generated token
-$result = HTTP::doSOAP($targetIPSTS, WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password), WSTRUST::getTimestampHeader(), $targetIPSTS), WSTRUST::getRST($tokenTypeIPSTS, $appliesToIPSTS));
+$result = HTTP::doSOAP(
+		$targetIPSTS,
+		WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password),
+				WSTRUST::getTimestampHeader(),
+				$targetIPSTS),
+		WSTRUST::getRST($tokenTypeIPSTS, $appliesToIPSTS)
+);
 
 // parse the RSTR that is returned
 list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);
@@ -51,7 +58,11 @@ list($dom, $token) = WSTRUST::getDecrypted($dom, $xpath, $token, $tokenTypeIPSTS
 
 $ts = WSTRUST::getTimestampHeader('_0');
 $token = $dom->saveXML($token) . WSTRUST::getSigned($ts, $proofKey, $token->getAttribute('ID'), '_0');
-$result = HTTP::doSOAP($targetRPSTS, WSTRUST::getRSTHeader($token, $ts, $targetRPSTS), WSTRUST::getRST($tokenTypeRPSTS, $appliesToRPSTS, 'Validate'));
+$result = HTTP::doSOAP(
+		$targetRPSTS,
+		WSTRUST::getRSTHeader($token, $ts, $targetRPSTS),
+		WSTRUST::getRST($tokenTypeRPSTS, $appliesToRPSTS, $keyTypeRPSTS, 'Validate')
+);
 
 // parse the RSTR that is returned
 list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);

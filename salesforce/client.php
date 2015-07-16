@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************************
- * Copyright (C) 2011-2013 Ping Identity Corporation
+ * Copyright (C) 2011-2015 Ping Identity Corporation
  * All rights reserved.
  *
  * The contents of this file are the property of Ping Identity Corporation.
@@ -40,7 +40,13 @@ $IPSTS = 'https://localhost:9031/idp/sts.wst?TokenProcessorId=usernametokenldap'
 $tokenType = 'urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser';
 
 // call to IP-STS, authenticate with uname/pwd, retrieve RSTR with generated token
-$result = HTTP::doSOAP($IPSTS, WSTRUST::getRSTHeader(WSTRUST::getUserNameToken($username, $password), WSTRUST::getTimestampHeader(), $IPSTS), WSTRUST::getRST($tokenType, $appliesTo));
+$result = HTTP::doSOAP(
+		$IPSTS,
+		WSTRUST::getRSTHeader(
+				WSTRUST::getUserNameToken($username, $password),
+				WSTRUST::getTimestampHeader(), $IPSTS),
+		WSTRUST::getRST($tokenType, $appliesTo)
+);
 
 // parse the RSTR that is returned
 list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);
