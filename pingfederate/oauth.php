@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************************
- * Copyright (C) 2015 Ping Identity Corporation
+ * Copyright (C) 2015-2016 Ping Identity Corporation
  * All rights reserved.
  *
  * The contents of this file are the property of Ping Identity Corporation.
@@ -16,7 +16,12 @@
  *      http://www.pingidentity.com
  *      
  * OAuth 2.0 SAML bearer assertion flow.
- * Get around the Subject Confirmation issue (/token/oauth2) with SSO assertions
+ *
+ * use the stock OAuth Playground for the PingFederate setup
+ * 
+ * or:
+ *
+ * get around the Subject Confirmation issue (/token/oauth2) with SSO assertions
  * - get a SAML SSO assertion from PF-DEMO IDP (sign assertion)
  * - paste from browser in assertion.xml
  * - exchange at the SP STS for another SAML assertion with the right audience (PF AS)
@@ -35,10 +40,10 @@ $username = 'joe';
 $password = '2Federate';
 
 // RST appliesTo
-$appliesTo = 'https://ba_client';
+$appliesTo = 'localhost:default:entityId';
 
-// PingFederate 6.x/7.x IP-STS endpoint
-$IPSTS = 'https://localhost:9031/idp/sts.wst?TokenProcessorId=usernametoken0';
+// PingFederate 8.x IP-STS endpoint
+$IPSTS = 'https://localhost:9031/idp/sts.wst?TokenProcessorId=UsernameTokenProcessor';
 
 // ask for the standard SAML 2.0 token type
 $tokenType = WSTRUST::TOKENTYPE_SAML20;
@@ -57,23 +62,24 @@ list($dom, $xpath, $token, $proofKey) = WSTRUST::parseRSTR($result);
 
 // retrieve the actual token contents from the RSTR cq. the SAML Assertion 
 $element = 'saml:Assertion';
+#$element = 'saml:EncryptedAssertion';
 $xpath->registerNamespace('saml', 'urn:oasis:names:tc:SAML:2.0:assertion');
 $token =  $xpath->query($element, $token);
 $token = $token->item(0);
 
-//$token = $dom->saveXML();
+$token = $dom->saveXML($token);
 
-print " # SAML 2.0 Token:\n\n" . $dom->saveXML() . "\n";
+print " # SAML 2.0 Token:\n\n" . $token . "\n";
 
-$dom = new DOMDocument();
-$dom->load('assertion.xml');
-$token = $dom->documentElement;
+#$dom = new DOMDocument();
+#$dom->load('assertion.xml');
+#$token = $dom->documentElement;
 
 // PingFederate 6.x RP-STS endpoint
-$targetRPSTS = 'https://localhost:9031/sp/sts.wst';
+#$targetRPSTS = 'https://localhost:9031/sp/sts.wst';
 
 // Status Token Type at the RP
-$tokenTypeRPSTS = WSTRUST::TOKENTYPE_SAML20;
+#$tokenTypeRPSTS = WSTRUST::TOKENTYPE_SAML20;
 
 #$ts = WSTRUST::getTimestampHeader('_0');
 #$token = $dom->saveXML($token) . WSTRUST::getSigned($ts, $proofKey, $token->getAttribute('ID'), '_0');
@@ -86,10 +92,10 @@ $tokenTypeRPSTS = WSTRUST::TOKENTYPE_SAML20;
 #$xpath->registerNamespace('saml', 'urn:oasis:names:tc:SAML:2.0:assertion');
 #$token =  $xpath->query($element, $token);
 #$token = $token->item(0);
-$token = $dom->saveXML($token);
+#$token = $dom->saveXML($token);
 
 $endpoint = 'https://localhost:9031/as/token.oauth2';
-$client_id = 'ba_client';
+$client_id = 'saml_client';
 $grantType = 'urn:ietf:params:oauth:grant-type:saml2-bearer';
 
 // post the base4-url-encoded SAML Assertion token to the AS
